@@ -25,3 +25,4 @@ const RegisterUser =async(req :Request ,res :Response)=>{
 
    }
 }
+export default RegisterUser
