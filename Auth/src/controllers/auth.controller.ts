@@ -5,7 +5,7 @@ import User from "../models/auth.model.js";
 import { bytes } from "node:stream/consumers";
 export const RegisterUser =async(req :Request ,res :Response)=>{
    try{
-    const {email,password}=req.body
+    const {email,password,role}=req.body
     if(!email || !password){
        return res.status(401).json({message:"please enter password or email"})
     }
@@ -16,7 +16,8 @@ export const RegisterUser =async(req :Request ,res :Response)=>{
     const hashedPassword =await bcrypt.hash(password,10)
     const newUser= await User.create({
       email,
-      password:hashedPassword
+      password:hashedPassword,
+      role:role || "user"
     })
     return res.status(200).json({message:"User created successfully" ,user:newUser})
 
