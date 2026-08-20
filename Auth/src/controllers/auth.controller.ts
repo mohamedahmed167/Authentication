@@ -1,4 +1,5 @@
 import { Request ,Response } from "express";
+import { AuthRequset } from "../middleware/auth.middleware.js";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import User from "../models/auth.model.js";
@@ -41,7 +42,7 @@ export const LoginUser=async(req :Request ,res :Response):Promise<any> =>{
     if(!isPasswordvaild){
       return res.status(400).json({message:"the password dosn't match"})
     }
-    const token = jwt.sign({ User_id: user._id },
+    const token = jwt.sign({ User_id: user._id ,role:user.role },
       process.env.JWT_SECRET ||"gjwgkjkggsgs",
       {expiresIn:"1h"}
     )
@@ -51,4 +52,19 @@ export const LoginUser=async(req :Request ,res :Response):Promise<any> =>{
     return res.status(400).json({message:"there is error in login"})
 
   }
+}
+export const getUser =async(req:AuthRequset ,res:Response) :Promise<any> =>{
+  try{
+    const userId = req.user.User_id;
+    const user =await User.findById(userId).select("-password")
+    if(!user){
+      return res.status(400).json({message:"User not found"})
+    }
+    return res.status(200).json({user})
+  }catch(error){
+console.log("error geting user",error)
+return res.status(404).json({message:"there is problem"})
+
+  }
+
 }
