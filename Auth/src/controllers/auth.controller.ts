@@ -2,7 +2,8 @@ import { Request ,Response } from "express";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import User from "../models/auth.model.js";
-const RegisterUser =async(req :Request ,res :Response)=>{
+import { bytes } from "node:stream/consumers";
+export const RegisterUser =async(req :Request ,res :Response)=>{
    try{
     const {email,password}=req.body
     if(!email || !password){
@@ -25,4 +26,28 @@ const RegisterUser =async(req :Request ,res :Response)=>{
 
    }
 }
-export default RegisterUser
+export const LoginUser=async(req :Request ,res :Response):Promise<any> =>{
+  try{
+    const {email,password}=req.body;
+    if(!email || !password){
+      return res.status(402).json({message:"please provide email or password"})
+    }
+    const user =await User.findOne({email})
+    if(!user){
+      return res.status(400).json({message:"invaild email or password"})
+    }
+    const isPasswordvaild =await bcrypt.compare(password,user.password)
+    if(!isPasswordvaild){
+      return res.status(400).json({message:"the password dosn't match"})
+    }
+    const token = jwt.sign({ User_id: user._id },
+      process.env.JWT_SECRET ||"gjwgkjkggsgs",
+      {expiresIn:"1h"}
+    )
+    return res.status(200).json({message:"login is successfully",token,user:user})
+  }catch(error){
+    console.error("error login in user",error);
+    return res.status(400).json({message:"there is error in login"})
+
+  }
+}
